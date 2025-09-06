@@ -36,10 +36,20 @@ pub fn command() -> Result<Vec<Package>, Box<dyn Error>> {
         return Err("No dependencies found".into());
     }
 
-    //let dependencies = json["dependencies"].as_object();
-    let dependencies = json["devDependencies"].as_object();
+    let dependencies = json["dependencies"].as_object().unwrap();
+    let dev_dependencies = json["devDependencies"].as_object().unwrap();
 
-    for (name, version) in dependencies.unwrap().iter() {
+    process_dependencies(dependencies, &mut packages)?;
+    process_dependencies(dev_dependencies, &mut packages)?;
+
+    return Ok(packages);
+}
+
+fn process_dependencies(
+    dependencies: &serde_json::Map<String, serde_json::Value>,
+    packages: &mut Vec<Package>,
+) -> Result<(), Box<dyn Error>> {
+    for (name, version) in dependencies.iter() {
         let mut package = Package {
             name: name.to_string(),
             current_version: version.to_string().replace("\"", ""),
@@ -64,7 +74,7 @@ pub fn command() -> Result<Vec<Package>, Box<dyn Error>> {
 
         package.specifier = final_specifier.clone();
 
-        let compared_version = compare_versions_v2(&mut package);
+        let compared_version = compare_versions(&mut package);
 
         if package.update_available && specifier != '*' {
             println!(
@@ -78,10 +88,10 @@ pub fn command() -> Result<Vec<Package>, Box<dyn Error>> {
         }
     }
 
-    return Ok(packages);
+    Ok(())
 }
 
-fn compare_versions_v2(package: &mut Package) -> String {
+fn compare_versions(package: &mut Package) -> String {
     let version: Range = package
         .current_version
         .parse()
@@ -100,10 +110,12 @@ fn compare_versions_v2(package: &mut Package) -> String {
             return format_args!(
                 "{}{}.{}.{}",
                 package.specifier,
-                latest.major.to_string().red(),
-                latest.minor.to_string().red(),
-                latest.patch.to_string().red()
+                latest.major.to_string(),
+                latest.minor.to_string(),
+                latest.patch.to_string(),
             )
+            .to_string()
+            .red()
             .to_string();
         }
 
@@ -112,9 +124,11 @@ fn compare_versions_v2(package: &mut Package) -> String {
                 "{}{}.{}.{}",
                 package.specifier,
                 latest.major.to_string(),
-                latest.minor.to_string().yellow(),
-                latest.patch.to_string().yellow()
+                latest.minor.to_string(),
+                latest.patch.to_string(),
             )
+            .to_string()
+            .yellow()
             .to_string();
         }
 
@@ -124,8 +138,10 @@ fn compare_versions_v2(package: &mut Package) -> String {
                 package.specifier,
                 latest.major.to_string(),
                 latest.minor.to_string(),
-                latest.patch.to_string().green()
+                latest.patch.to_string(),
             )
+            .to_string()
+            .green()
             .to_string();
         }
 
