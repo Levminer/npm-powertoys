@@ -92,16 +92,29 @@ fn process_dependencies(
 }
 
 fn compare_versions(package: &mut Package) -> String {
-    let version: Range = package
-        .current_version
-        .parse()
-        .expect("Failed to parse range");
-    let min_version = version.min_version().expect("Failed to get min version");
+    let version: Range = match package.current_version.parse() {
+        Ok(v) => v,
+        Err(e) => {
+            eprintln!("Error: Failed to parse range for {}: {}", package.name, e);
+            return String::new();
+        }
+    };
 
-    let latest: Version = package
-        .latest_version
-        .parse()
-        .expect("Failed to parse version");
+    let min_version = match version.min_version() {
+        Some(v) => v,
+        None => {
+            eprintln!("Error: Failed to get min version for {}", package.name);
+            return String::new();
+        }
+    };
+
+    let latest: Version = match package.latest_version.parse() {
+        Ok(v) => v,
+        Err(e) => {
+            eprintln!("Error: Failed to parse version for {}: {}", package.name, e);
+            return String::new();
+        }
+    };
 
     if latest.gt(&min_version) {
         package.update_available = true;

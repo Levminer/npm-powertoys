@@ -14,7 +14,7 @@ fn main() {
                 println!("Deleted paths: {:?}", paths);
             }
             Err(e) => {
-                println!("Error: {:?}", e);
+                eprintln!("Error: {:?}", e);
             }
         },
         Some(("update", _sub_m)) => match npm_powertoys::update::command() {
@@ -22,7 +22,7 @@ fn main() {
                 println!("packages: {:?}", packages);
             }
             Err(e) => {
-                println!("Error: {:?}", e);
+                eprintln!("Error: {:?}", e);
             }
         },
         _ => {
