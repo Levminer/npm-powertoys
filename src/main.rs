@@ -18,8 +18,8 @@ fn main() {
             }
         },
         Some(("update", _sub_m)) => match npm_powertoys::update::command() {
-            Ok(packages) => {
-                println!("packages: {:?}", packages);
+            Ok(_packages) => {
+                // println!("packages: {:?}", packages);
             }
             Err(e) => {
                 eprintln!("Error: {:?}", e);
