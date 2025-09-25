@@ -4,8 +4,9 @@
 
 ### Installation
 
-`cargo install npm_powertoys`
+`cargo install npm-powertoys`
 
 ### Usage
 
-TODO
+-   clean: Remove all node_modules recursively
+-   update: Update dependencies interactively

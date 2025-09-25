@@ -44,10 +44,14 @@ pub fn command() -> Result<Vec<Package>, Box<dyn Error>> {
         process_dependencies(dev_dependencies, &mut packages)?;
     }
 
+    // No updates available
     if packages.is_empty() {
         println!("No package updates available!");
         return Ok(packages);
     }
+
+    // Prompt user to select packages to update
+    clearscreen::clear().expect("Failed to clear screen");
 
     let selected_indexes = MultiSelect::with_theme(&ColorfulTheme::default())
         .with_prompt("Select package(s) to update")
@@ -67,7 +71,7 @@ pub fn command() -> Result<Vec<Package>, Box<dyn Error>> {
         .interact()
         .unwrap();
 
-    println!("You selected: {:?}", selected_indexes);
+    // Apply updates to package.json
     modify_package_json(&packages, &selected_indexes)?;
 
     return Ok(packages);
@@ -177,16 +181,30 @@ fn compare_versions(package: &mut Package) -> Result<(), Box<dyn Error>> {
         }
 
         if latest.minor > min_version.minor {
-            package.formatted_latest_version = format_args!(
-                "{}{}.{}.{}",
-                package.specifier,
-                latest.major.to_string(),
-                latest.minor.to_string(),
-                latest.patch.to_string(),
-            )
-            .to_string()
-            .yellow()
-            .to_string();
+            // if major is 0 minor updates are considered breaking changes
+            if latest.major == 0 {
+                package.formatted_latest_version = format_args!(
+                    "{}{}.{}.{}",
+                    package.specifier,
+                    latest.major.to_string(),
+                    latest.minor.to_string(),
+                    latest.patch.to_string(),
+                )
+                .to_string()
+                .red()
+                .to_string();
+            } else {
+                package.formatted_latest_version = format_args!(
+                    "{}{}.{}.{}",
+                    package.specifier,
+                    latest.major.to_string(),
+                    latest.minor.to_string(),
+                    latest.patch.to_string(),
+                )
+                .to_string()
+                .yellow()
+                .to_string();
+            }
 
             return Ok(());
         }
@@ -261,7 +279,14 @@ fn modify_package_json(
     let updated_content = serde_json::to_string_pretty(&json)?;
     fs::write(&file_path, updated_content)?;
 
-    println!("package.json updated successfully. Run the install command to apply the updates.");
+    println!(
+        "{}",
+        String::from(
+            "package.json updated successfully. Run the install command to apply the updates."
+        )
+        .green()
+        .bold()
+    );
 
     Ok(())
 }

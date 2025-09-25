@@ -1,5 +1,5 @@
 [package]
-name = "npm_powertoys"
+name = "npm-powertoys"
 version = "0.1.0"
 edition = "2021"
 description = "A simple CLI tool for npm projects."
@@ -13,6 +13,7 @@ serde = { version = "1.0", features = ["derive"] }
 reqwest = { version = "0.12", features = ["blocking", "json"] }
 clap = { version = "4.3.19", features = ["derive"] }
 dialoguer = "0.12"
+clearscreen = "2.0"
 walkdir = "2.3.3"
 spinners = "4.1.0"
 colored = "3.0.0"
